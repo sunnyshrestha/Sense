@@ -1,4 +1,4 @@
-package com.example.healthapp
+package com.sunny.sense
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,11 +11,13 @@ import androidx.compose.ui.unit.dp
 import java.time.Instant
 
 @Composable
-fun DashboardScreen(healthConnectManager: HealthConnectManager) {
+fun DashboardScreen(healthConnectManager: HealthConnectManager, firebaseAuthManager: FirebaseAuthManager) {
     var todaySteps by remember { mutableLongStateOf(0L) }
     var todayCalories by remember { mutableDoubleStateOf(0.0) }
     var weekSteps by remember { mutableStateOf<List<Pair<Instant, Long>>>(emptyList()) }
     var insights by remember { mutableStateOf<List<String>>(emptyList()) }
+
+    val dataBackupManager = remember { DataBackupManager(firebaseAuthManager) }
 
     LaunchedEffect(Unit) {
         val (steps, calories) = healthConnectManager.getTodayStepsAndCalories()
@@ -24,6 +26,9 @@ fun DashboardScreen(healthConnectManager: HealthConnectManager) {
 
         weekSteps = healthConnectManager.getStepsForLastWeek()
         insights = InsightsAnalyzer.generateInsights(todaySteps, todayCalories, weekSteps)
+
+        // Backup today's data to Firebase if user is logged in
+        dataBackupManager.backupDailyData(Instant.now(), steps, calories)
     }
 
     LazyColumn(

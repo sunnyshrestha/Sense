@@ -1,4 +1,4 @@
-package com.example.healthapp
+package com.sunny.sense
 
 import java.time.Instant
 
